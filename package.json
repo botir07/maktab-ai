@@ -1,0 +1,16 @@
+{
+  "name": "hana-school-ai",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev:frontend": "pnpm --filter hana-school-ai-frontend dev",
+    "dev:backend": "pnpm --filter hana-school-ai-backend dev",
+    "build": "pnpm --filter hana-school-ai-frontend build && pnpm --filter hana-school-ai-backend build",
+    "start:backend": "pnpm --filter hana-school-ai-backend start",
+    "lint": "pnpm --filter hana-school-ai-frontend lint && pnpm --filter hana-school-ai-backend lint"
+  },
+  "devDependencies": {
+    "turbo": "^1.12.7"
+  }
+}
+
