@@ -37,6 +37,14 @@ export async function createAndSendOtp(target: OtpTarget) {
   const codeHash = hashOtp(code, identifier);
 
   await query(
+    `DELETE FROM otp_verifications
+     WHERE channel = $1
+       AND identifier = $2
+       AND (expires_at <= NOW() OR verified_at IS NULL)`,
+    [target.channel, identifier]
+  );
+
+  await query(
     `INSERT INTO otp_verifications (channel, identifier, code_hash, expires_at)
      VALUES ($1, $2, $3, NOW() + ($4::int * INTERVAL '1 minute'))`,
     [target.channel, identifier, codeHash, config.otpExpiresMinutes]
@@ -110,6 +118,24 @@ export async function hasVerifiedOtp(target: OtpTarget) {
   );
 
   return result.rows.length > 0;
+}
+
+export async function consumeVerifiedOtp(target: OtpTarget) {
+  const identifier = getOtpIdentifier(target);
+  await query(
+    `DELETE FROM otp_verifications
+     WHERE id = (
+       SELECT id
+       FROM otp_verifications
+       WHERE channel = $1
+         AND identifier = $2
+         AND verified_at IS NOT NULL
+         AND expires_at > NOW()
+       ORDER BY verified_at DESC
+       LIMIT 1
+     )`,
+    [target.channel, identifier]
+  );
 }
 
 function generateOtpCode() {
